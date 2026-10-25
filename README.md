@@ -46,7 +46,20 @@ node build.mjs
 npx -y @google/clasp push --force
 npx -y @google/clasp create-deployment \
   -i AKfycbyfS0EeA5rlHcOyaDjO88BjaxAes0Zwvsh92wXzPKYgDciVoRuDa2eQXZ_eiJNECofn -d Interpres
+cd .. && sh scripts/publish-jsdelivr.sh        # republish tinyurl.com/interpresapp
 ```
+
+**After every Apps Script deploy, run `scripts/publish-jsdelivr.sh`.** It
+republishes **<https://tinyurl.com/interpresapp>**, the link that works for
+every visitor. script.google.com shows Google's "Sorry, unable to open the file
+at this time" to anyone whose browser is signed into a personal Gmail that does
+not own the script, and github.io is blocked at school. The link opens
+`interpres/open.svg` from the repository `yuzhe-chen/saxon-arcade` (checked out at
+`~/planner/arcade`) on jsDelivr. That loader writes the live web app's own page
+into a frame (`scripts/standalone.mjs` takes it from the `/exec` address and adds
+a `google.script.run` that sends `api()` calls to `doPost` and
+`doGet(?result=id)` as plain, cookie-free requests). A new `/api/` route the page
+calls must also go in `HTTP_ROUTES_` in `appscript/src/Code.js`.
 
 `npm run pages:build` makes the Pages copy in `_site/` to look at locally.
 

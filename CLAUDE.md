@@ -28,3 +28,9 @@ The ones that have cost the most, in short:
 ## Testing
 
 - `npm test` is the offline suite and must stay offline.
+
+## Deploying
+
+- After every Apps Script deploy, run `sh scripts/publish-jsdelivr.sh`. It
+  republishes tinyurl.com/interpresapp, the link that works for visitors
+  signed into a personal Gmail (see README, Deploying).
