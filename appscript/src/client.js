@@ -179,4 +179,77 @@
     }
     if (!link.hasAttribute('data-link') && !link.target) link.setAttribute('data-link', '');
   }, true);
+
+  // ---------------------------------------------------- web.app popup ----
+
+  // Only on the Apps Script page itself (its frame is on googleusercontent.com),
+  // never on the web.app, github.io or jsDelivr copies of this page. Once
+  // closed, it stays closed for the rest of the tab's session.
+  const WEB_APP = 'https://interpres.web.app';
+  const WEB_APP_SEEN = 'interpres-webapp-popup';
+  const WEB_APP_TEXT = {
+    en: { title: 'Use interpres.web.app', body: 'The web.app version is faster, works on every account and computer, and gets updates first.', go: 'Open interpres.web.app', stay: 'Stay here' },
+  };
+
+  function seenWebAppPopup() {
+    try { return sessionStorage.getItem(WEB_APP_SEEN) === '1'; } catch { return false; }
+  }
+
+  function showWebAppPopup() {
+    if (document.querySelector('.webapp-popup')) return;
+    const text = WEB_APP_TEXT.en;
+    const style = document.createElement('style');
+    style.textContent = '.webapp-popup{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;'
+      + 'padding:16px;background:rgba(0,0,0,.5)}'
+      + '.webapp-popup__card{width:100%;max-width:440px;padding:28px 24px 24px;border:2px solid var(--line);border-bottom-width:4px;'
+      + 'border-radius:var(--radius);background:var(--panel, #fff);color:var(--text);font-family:var(--sans);text-align:center}'
+      + '.webapp-popup__card h2{margin:0 0 10px;font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:-.02em;'
+      + 'line-height:1.15;color:var(--red);overflow-wrap:anywhere}'
+      + '.webapp-popup__card p{margin:0 0 22px;font-size:16px;line-height:1.5;color:var(--text-dim)}'
+      + '.webapp-popup__actions{display:flex;flex-direction:column;gap:10px}'
+      + '.webapp-popup__actions .btn{width:100%;white-space:normal;text-align:center;text-decoration:none}';
+    const popup = document.createElement('div');
+    popup.className = 'webapp-popup';
+    popup.innerHTML = '<div class="webapp-popup__card" role="dialog" aria-modal="true" aria-labelledby="webapp-popup-title">'
+      + '<h2 id="webapp-popup-title"></h2><p></p><div class="webapp-popup__actions">'
+      + '<a class="btn btn--primary btn--lg" target="_top" rel="noopener"></a>'
+      + '<button type="button" class="btn btn--lg"></button></div></div>';
+    popup.querySelector('h2').textContent = text.title;
+    popup.querySelector('p').textContent = text.body;
+    const go = popup.querySelector('a');
+    go.href = WEB_APP;
+    go.textContent = text.go;
+    const stay = popup.querySelector('button');
+    stay.textContent = text.stay;
+
+    function close() {
+      try { sessionStorage.setItem(WEB_APP_SEEN, '1'); } catch { /* shows again next load */ }
+      popup.remove();
+      document.removeEventListener('keydown', onKey, true);
+    }
+    function onKey(event) {
+      if (event.key === 'Escape') { event.preventDefault(); close(); }
+    }
+    go.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      try {
+        window.top.location.href = WEB_APP;
+      } catch {
+        window.open(WEB_APP, '_blank', 'noopener');
+      }
+    });
+    stay.addEventListener('click', close);
+    popup.addEventListener('click', (event) => { if (event.target === popup) close(); });
+    document.addEventListener('keydown', onKey, true);
+    document.head.appendChild(style);
+    document.body.appendChild(popup);
+    go.focus();
+  }
+
+  if (/(^|\.)googleusercontent\.com$/.test(window.location.hostname) && !seenWebAppPopup()) {
+    const later = () => { setTimeout(showWebAppPopup, 0); };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', later);
+    else later();
+  }
 })();
