@@ -53,6 +53,23 @@
     </div>
   </footer>
 
+  <script data-site="interpres">
+// Visit counter: two anonymous +1 counters per site per UTC day (sessions, unique browsers). No cookies, no ids, nothing else sent.
+(function () {
+  var S = document.currentScript && document.currentScript.getAttribute('data-site');
+  try {
+    if (!S || navigator.doNotTrack === '1' || navigator.webdriver || /^(localhost|127\.0\.0\.1|)$/.test(location.hostname) || window.top !== window.self) return;
+    var D = new Date().toISOString().slice(0, 10), B = 'https://departed-rooms-6e8e1e-default-rtdb.firebaseio.com/visits/' + S + '/' + D + '/';
+    var hit = function (k) { try { fetch(B + k + '.json?x-http-method-override=PUT', { method: 'POST', body: '{".sv":{"increment":1}}', keepalive: true, referrerPolicy: 'no-referrer', credentials: 'omit', headers: { 'Content-Type': 'text/plain' } }).catch(function () {}); } catch (e) {} };
+    setTimeout(function () {
+      try {
+        if (!sessionStorage.getItem('visit.' + S)) { sessionStorage.setItem('visit.' + S, D); hit('v'); }
+        if (localStorage.getItem('visit.' + S + '.u') !== D) { localStorage.setItem('visit.' + S + '.u', D); hit('u'); }
+      } catch (e) {}
+    }, 2000);
+  } catch (e) {}
+})();
+  </script>
   <script type="module" src="/js/app.js"></script>
 </body>
 </html>
